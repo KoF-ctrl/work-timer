@@ -14,6 +14,8 @@
 <div class="scanlines"></div>
 <div class="grid-bg"></div>
 
+<div class="app-stack">
+
 <div class="hud">
   <div class="corner tl"></div>
   <div class="corner tr"></div>
@@ -79,6 +81,70 @@
   </footer>
 </div>
 
+<div class="hud pomo-hud" id="pomoHud">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <header class="hud-header">
+    <div class="header-left">
+      <span class="tag">FOCUS</span>
+      <span class="title">FOCUS&nbsp;TIMER</span>
+    </div>
+    <label class="cycle-toggle">
+      <span class="toggle-label">AUTO&nbsp;CYCLE</span>
+      <input type="checkbox" id="cycleToggle">
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+    </label>
+  </header>
+
+  <div id="modeTabs" class="mode-tabs is-hidden">
+    <button type="button" class="mode-tab active" data-phase="work">作業&nbsp;<span id="workDurLabel">25:00</span></button>
+    <button type="button" class="mode-tab" data-phase="break">休憩&nbsp;<span id="breakDurLabel">05:00</span></button>
+  </div>
+
+  <div class="status-row">
+    <div id="pomoPill" class="status-pill status-before">
+      <span class="dot"></span>
+      <span id="pomoStatusText">READY</span>
+    </div>
+    <div id="sessionLabel" class="shift-range is-hidden">SESSION&nbsp;<span id="sessionCount">1</span></div>
+  </div>
+
+  <main class="gauge-area">
+    <svg id="pomoRing" class="ring" viewBox="0 0 400 400">
+      <circle class="ring-track" cx="200" cy="200" r="170"></circle>
+      <circle id="pomoRingProgress" class="ring-progress" cx="200" cy="200" r="170"></circle>
+      <g id="pomoTicks"></g>
+      <circle id="pomoHandle" class="pomo-handle" cx="200" cy="30" r="10"></circle>
+    </svg>
+
+    <div class="readout">
+      <div id="pomoPhaseLabel" class="readout-label">FOCUS</div>
+      <div id="pomoTime" class="big-time">25:00</div>
+      <div id="pomoHint" class="sub-label">ドラッグ or プリセットで時間設定</div>
+    </div>
+  </main>
+
+  <div id="presetRow" class="preset-row">
+    <button type="button" class="preset-btn" data-min="5">5</button>
+    <button type="button" class="preset-btn" data-min="10">10</button>
+    <button type="button" class="preset-btn" data-min="15">15</button>
+    <button type="button" class="preset-btn active" data-min="25">25</button>
+    <button type="button" class="preset-btn" data-min="45">45</button>
+  </div>
+
+  <div class="pomo-controls">
+    <button type="button" id="pomoStartBtn" class="pomo-btn pomo-btn-primary">START</button>
+    <button type="button" id="pomoPauseBtn" class="pomo-btn" disabled>PAUSE</button>
+    <button type="button" id="pomoResetBtn" class="pomo-btn">RESET</button>
+  </div>
+</div>
+
+</div>
+
 <script src="app.js"></script>
+<script src="pomo.js"></script>
 </body>
 </html>
