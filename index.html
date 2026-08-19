@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WORK-TIME // REMAINING</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="grid-bg"></div>
+
+<div class="hud">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <header class="hud-header">
+    <div class="header-left">
+      <span class="tag">SYS</span>
+      <span class="title">WORK&nbsp;TIME&nbsp;MONITOR</span>
+    </div>
+    <div class="header-right">
+      <span id="clock" class="clock">--:--:--</span>
+      <span id="dateLabel" class="date-label">----.--.-- ---</span>
+    </div>
+  </header>
+
+  <div class="status-row">
+    <div id="statusPill" class="status-pill status-off">
+      <span class="dot"></span>
+      <span id="statusText">INITIALIZING</span>
+    </div>
+    <div class="shift-range">SHIFT&nbsp;09:00–17:30&nbsp;/&nbsp;MON–FRI</div>
+  </div>
+
+  <main class="gauge-area">
+    <svg id="ring" class="ring" viewBox="0 0 400 400">
+      <circle class="ring-track" cx="200" cy="200" r="170"></circle>
+      <circle id="ringProgress" class="ring-progress" cx="200" cy="200" r="170"></circle>
+      <g id="ticks"></g>
+    </svg>
+
+    <div class="readout">
+      <div id="readoutLabel" class="readout-label">REMAINING</div>
+      <div id="bigTime" class="big-time">--:--:--</div>
+      <div id="subLabel" class="sub-label">&nbsp;</div>
+      <div id="percent" class="percent">--%</div>
+    </div>
+  </main>
+
+  <section class="segbar-wrap">
+    <div class="segbar-labels">
+      <span>09:00</span>
+      <span>13:15</span>
+      <span>17:30</span>
+    </div>
+    <div id="segbar" class="segbar"></div>
+  </section>
+
+  <footer class="hud-footer">
+    <div class="footer-item">
+      <span class="k">NEXT&nbsp;EVENT</span>
+      <span id="nextEvent" class="v">--</span>
+    </div>
+    <div class="footer-item">
+      <span class="k">ELAPSED</span>
+      <span id="elapsedTime" class="v">--:--:--</span>
+    </div>
+    <div class="footer-item">
+      <span class="k">AUTO-TRACK</span>
+      <span class="v v-ok">ENABLED</span>
+    </div>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
