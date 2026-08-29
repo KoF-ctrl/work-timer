@@ -1,13 +1,15 @@
 (function () {
   'use strict';
 
-  const WORK_START = { h: 9, m: 0 };
-  const WORK_END = { h: 17, m: 30 };
+  const DEFAULT_START = { h: 9, m: 0 };
+  const SHIFT_DURATION_MIN = 8 * 60 + 30; // 9:00-17:30 = 8.5h, kept fixed when start time shifts
+  const SHIFT_DURATION_MS = SHIFT_DURATION_MIN * 60 * 1000;
   const SEGMENT_MINUTES = 15;
   const URGENT_MS = 30 * 60 * 1000;
   const CRITICAL_MS = 5 * 60 * 1000;
   const RING_RADIUS = 170;
   const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+  const STORAGE_KEY = 'work-timer:start-time';
 
   const el = {
     clock: document.getElementById('clock'),
@@ -23,10 +25,19 @@
     segbar: document.getElementById('segbar'),
     nextEvent: document.getElementById('nextEvent'),
     elapsedTime: document.getElementById('elapsedTime'),
+    shiftConfig: document.getElementById('shiftEditBtn') && document.getElementById('shiftEditBtn').parentElement,
+    shiftEditBtn: document.getElementById('shiftEditBtn'),
+    shiftRangeText: document.getElementById('shiftRangeText'),
+    shiftPanel: document.getElementById('shiftPanel'),
+    shiftPresetRow: document.getElementById('shiftPresetRow'),
+    shiftCustomInput: document.getElementById('shiftCustomInput'),
+    segLabelStart: document.getElementById('segLabelStart'),
+    segLabelMid: document.getElementById('segLabelMid'),
+    segLabelEnd: document.getElementById('segLabelEnd'),
   };
 
   const WEEKDAY_LABEL = ['日', '月', '火', '水', '木', '金', '土'];
-  const TOTAL_SEGMENTS = ((WORK_END.h * 60 + WORK_END.m) - (WORK_START.h * 60 + WORK_START.m)) / SEGMENT_MINUTES;
+  const TOTAL_SEGMENTS = SHIFT_DURATION_MIN / SEGMENT_MINUTES;
 
   function pad(n) {
     return String(n).padStart(2, '0');
@@ -40,6 +51,10 @@
     return `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
 
+  function fmtHM(h, m) {
+    return `${pad(h)}:${pad(m)}`;
+  }
+
   function atTime(date, h, m) {
     const d = new Date(date);
     d.setHours(h, m, 0, 0);
@@ -51,14 +66,43 @@
     return day >= 1 && day <= 5;
   }
 
+  // ---------- start-time (shift) setting, persisted indefinitely ----------
+
+  let workStart = loadWorkStart();
+
+  function loadWorkStart() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (Number.isInteger(o.h) && Number.isInteger(o.m) && o.h >= 0 && o.h <= 23 && o.m >= 0 && o.m <= 59) {
+          return { h: o.h, m: o.m };
+        }
+      }
+    } catch (e) { /* ignore corrupt storage */ }
+    return { ...DEFAULT_START };
+  }
+
+  function setWorkStart(h, m) {
+    workStart = { h, m };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(workStart));
+    } catch (e) { /* storage unavailable, keep in-memory only */ }
+    updateShiftUI();
+  }
+
+  function endOf(startDate) {
+    return new Date(startDate.getTime() + SHIFT_DURATION_MS);
+  }
+
   function nextWorkStart(from) {
-    const todayStart = atTime(from, WORK_START.h, WORK_START.m);
+    const todayStart = atTime(from, workStart.h, workStart.m);
     if (isWeekday(from) && from < todayStart) {
       return todayStart;
     }
     const d = new Date(from);
     d.setDate(d.getDate() + 1);
-    d.setHours(WORK_START.h, WORK_START.m, 0, 0);
+    d.setHours(workStart.h, workStart.m, 0, 0);
     while (!isWeekday(d)) {
       d.setDate(d.getDate() + 1);
     }
@@ -67,8 +111,8 @@
 
   function computeState(now) {
     const weekday = isWeekday(now);
-    const start = atTime(now, WORK_START.h, WORK_START.m);
-    const end = atTime(now, WORK_END.h, WORK_END.m);
+    const start = atTime(now, workStart.h, workStart.m);
+    const end = endOf(start);
 
     if (weekday && now >= start && now <= end) {
       const total = end - start;
@@ -79,6 +123,8 @@
         remaining,
         elapsed,
         total,
+        startAt: start,
+        endAt: end,
         nextEventLabel: '定時',
         nextEventAt: end,
       };
@@ -88,6 +134,8 @@
       return {
         phase: 'before',
         remaining: start - now,
+        startAt: start,
+        endAt: end,
         nextEventLabel: '始業',
         nextEventAt: start,
       };
@@ -168,6 +216,83 @@
     });
   }
 
+  // ---------- shift (start time) editor UI ----------
+
+  function updateShiftUI() {
+    const endH_M = (() => {
+      const totalMin = workStart.h * 60 + workStart.m + SHIFT_DURATION_MIN;
+      return { h: Math.floor(totalMin / 60) % 24, m: totalMin % 60 };
+    })();
+    const midMin = workStart.h * 60 + workStart.m + Math.round(SHIFT_DURATION_MIN / 2);
+    const mid = { h: Math.floor(midMin / 60) % 24, m: midMin % 60 };
+
+    el.shiftRangeText.textContent = `${fmtHM(workStart.h, workStart.m)}–${fmtHM(endH_M.h, endH_M.m)}`;
+    el.segLabelStart.textContent = fmtHM(workStart.h, workStart.m);
+    el.segLabelMid.textContent = fmtHM(mid.h, mid.m);
+    el.segLabelEnd.textContent = fmtHM(endH_M.h, endH_M.m);
+
+    if (el.shiftPresetRow) {
+      Array.from(el.shiftPresetRow.children).forEach((btn) => {
+        const isMatch = Number(btn.dataset.h) === workStart.h && Number(btn.dataset.m) === workStart.m;
+        btn.classList.toggle('active', isMatch);
+      });
+    }
+    if (el.shiftCustomInput) {
+      el.shiftCustomInput.value = fmtHM(workStart.h, workStart.m);
+    }
+  }
+
+  function openShiftPanel() {
+    el.shiftPanel.classList.remove('is-hidden');
+    el.shiftEditBtn.classList.add('active');
+  }
+
+  function closeShiftPanel() {
+    el.shiftPanel.classList.add('is-hidden');
+    el.shiftEditBtn.classList.remove('active');
+  }
+
+  if (el.shiftEditBtn) {
+    el.shiftEditBtn.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      if (el.shiftPanel.classList.contains('is-hidden')) openShiftPanel();
+      else closeShiftPanel();
+    });
+  }
+
+  if (el.shiftPresetRow) {
+    Array.from(el.shiftPresetRow.children).forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setWorkStart(Number(btn.dataset.h), Number(btn.dataset.m));
+        closeShiftPanel();
+      });
+    });
+  }
+
+  if (el.shiftCustomInput) {
+    el.shiftCustomInput.addEventListener('change', () => {
+      const val = el.shiftCustomInput.value; // "HH:MM"
+      const match = /^(\d{2}):(\d{2})$/.exec(val || '');
+      if (match) {
+        setWorkStart(Number(match[1]), Number(match[2]));
+        closeShiftPanel();
+      }
+    });
+  }
+
+  document.addEventListener('click', (evt) => {
+    if (!el.shiftConfig) return;
+    if (!el.shiftPanel.classList.contains('is-hidden') && !el.shiftConfig.contains(evt.target)) {
+      closeShiftPanel();
+    }
+  });
+
+  document.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Escape') closeShiftPanel();
+  });
+
+  // ---------- main render loop ----------
+
   function render(now) {
     el.clock.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     el.dateLabel.textContent = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ${WEEKDAY_LABEL[now.getDay()]}`;
@@ -186,7 +311,7 @@
       el.bigTime.textContent = fmtHMS(state.remaining);
       if (level === 'critical') el.bigTime.classList.add('critical');
       else if (level === 'urgent') el.bigTime.classList.add('urgent');
-      el.subLabel.textContent = '定時 17:30 まで';
+      el.subLabel.textContent = `定時 ${pad(state.endAt.getHours())}:${pad(state.endAt.getMinutes())} まで`;
       const pct = Math.round((state.remaining / state.total) * 100);
       el.percent.textContent = `${pct}% LEFT`;
       setRing(state.remaining / state.total, level);
@@ -198,7 +323,7 @@
       el.statusText.textContent = 'STANDBY';
       el.readoutLabel.textContent = 'STARTS IN';
       el.bigTime.textContent = fmtHMS(state.remaining);
-      el.subLabel.textContent = '始業 09:00 まで';
+      el.subLabel.textContent = `始業 ${pad(state.startAt.getHours())}:${pad(state.startAt.getMinutes())} まで`;
       el.percent.textContent = '';
       setRing(0, 'before');
       setSegments(TOTAL_SEGMENTS, 'normal');
@@ -227,6 +352,7 @@
     render(new Date());
   }
 
+  updateShiftUI();
   tick();
   setInterval(tick, 1000);
 })();

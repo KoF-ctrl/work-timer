@@ -38,7 +38,27 @@
       <span class="dot"></span>
       <span id="statusText">INITIALIZING</span>
     </div>
-    <div class="shift-range">SHIFT&nbsp;09:00–17:30&nbsp;/&nbsp;MON–FRI</div>
+    <div class="shift-config">
+      <button type="button" id="shiftEditBtn" class="shift-edit-btn">
+        <span class="k">SHIFT</span>
+        <span id="shiftRangeText" class="v">09:00–17:30</span>
+        <span class="edit-icon">✎</span>
+      </button>
+      <div id="shiftPanel" class="shift-panel is-hidden">
+        <div class="shift-panel-label">始業時刻を選択</div>
+        <div id="shiftPresetRow" class="preset-row shift-preset-row">
+          <button type="button" class="preset-btn shift-preset-btn" data-h="9" data-m="0">09:00</button>
+          <button type="button" class="preset-btn shift-preset-btn" data-h="9" data-m="30">09:30</button>
+          <button type="button" class="preset-btn shift-preset-btn" data-h="10" data-m="0">10:00</button>
+          <button type="button" class="preset-btn shift-preset-btn" data-h="10" data-m="30">10:30</button>
+          <button type="button" class="preset-btn shift-preset-btn" data-h="11" data-m="0">11:00</button>
+        </div>
+        <label class="shift-custom">
+          <span>CUSTOM</span>
+          <input type="time" id="shiftCustomInput" step="900">
+        </label>
+      </div>
+    </div>
   </div>
 
   <main class="gauge-area">
@@ -58,9 +78,9 @@
 
   <section class="segbar-wrap">
     <div class="segbar-labels">
-      <span>09:00</span>
-      <span>13:15</span>
-      <span>17:30</span>
+      <span id="segLabelStart">09:00</span>
+      <span id="segLabelMid">13:15</span>
+      <span id="segLabelEnd">17:30</span>
     </div>
     <div id="segbar" class="segbar"></div>
   </section>
