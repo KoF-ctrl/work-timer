@@ -54,7 +54,16 @@ body {
   gap: 20px;
 }
 
-.stats-hud {
+.side-column {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats-hud,
+.calendar-hud {
   width: 100%;
 }
 
@@ -72,7 +81,7 @@ body {
     max-width: 680px;
   }
 
-  .stats-hud.hud {
+  .side-column.side-column {
     flex: 0 0 320px;
     max-width: 320px;
     position: sticky;

@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="companion.css">
+<link rel="stylesheet" href="calendar.css">
 </head>
 <body>
 <div class="scanlines"></div>
@@ -167,6 +168,8 @@
 
 </div>
 
+<div class="side-column">
+
 <aside class="hud stats-hud">
   <div class="corner tl"></div>
   <div class="corner tr"></div>
@@ -199,11 +202,44 @@
   </div>
 </aside>
 
+<aside class="hud calendar-hud">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <header class="hud-header">
+    <div class="header-left">
+      <span class="tag">CAL</span>
+      <span class="title">CALENDAR</span>
+    </div>
+  </header>
+
+  <div class="calendar-nav">
+    <button type="button" id="calPrevBtn" class="calendar-nav-btn" aria-label="前の月">◀</button>
+    <button type="button" id="calMonthLabel" class="calendar-month-label">----.--</button>
+    <button type="button" id="calNextBtn" class="calendar-nav-btn" aria-label="次の月">▶</button>
+  </div>
+
+  <div class="calendar-weekdays">
+    <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+  </div>
+
+  <div id="calendarGrid" class="calendar-grid"></div>
+
+  <div class="calendar-legend">
+    <span class="calendar-legend-dot low"></span>フォーカス記録あり
+  </div>
+</aside>
+
+</div>
+
 </div>
 
 <script src="app.js"></script>
 <script src="pomo.js"></script>
 <script src="stats.js"></script>
 <script src="companion.js"></script>
+<script src="calendar.js"></script>
 </body>
 </html>
