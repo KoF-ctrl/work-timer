@@ -35,15 +35,49 @@ body {
   padding: 16px;
 }
 
-.app-stack {
+.page-layout {
   position: relative;
   z-index: 10;
   width: 100%;
   max-width: 720px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin: 0 auto;
+}
+
+.app-stack {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats-hud {
+  width: 100%;
+}
+
+/* On screens wide enough (iPad landscape and up), put the stats log
+   beside the timers instead of leaving the side margins empty. */
+@media (min-width: 1024px) {
+  .page-layout {
+    max-width: 1080px;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .app-stack {
+    flex: 1 1 680px;
+    max-width: 680px;
+  }
+
+  .stats-hud.hud {
+    flex: 0 0 320px;
+    max-width: 320px;
+    position: sticky;
+    top: 16px;
+  }
 }
 
 /* ---------- background fx ---------- */
@@ -528,6 +562,12 @@ body {
   text-shadow: 0 0 6px var(--cyan-glow);
 }
 
+.session-label {
+  font-size: 11px;
+  color: var(--cyan-dim);
+  letter-spacing: 1px;
+}
+
 /* ---------- focus / pomodoro timer ---------- */
 
 .is-hidden { display: none !important; }
@@ -729,6 +769,104 @@ body {
 @keyframes hud-flash {
   0%, 100% { box-shadow: 0 0 40px rgba(53, 242, 255, 0.08), inset 0 0 60px rgba(53, 242, 255, 0.04); border-color: var(--panel-border); }
   50% { box-shadow: 0 0 60px rgba(255, 59, 78, 0.5), inset 0 0 60px rgba(255, 59, 78, 0.15); border-color: var(--red); }
+}
+
+/* ---------- today's focus stats panel ---------- */
+
+.stats-hud {
+  padding-bottom: 20px;
+}
+
+.stats-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 4px 16px;
+  border-bottom: 1px solid var(--panel-border);
+  margin-bottom: 12px;
+}
+
+.stats-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats-big-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  color: #eafcff;
+  text-shadow: 0 0 10px var(--cyan-glow);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-sub-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--cyan-dim);
+}
+
+.stats-summary-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--panel-border);
+}
+
+.stats-log-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--cyan-dim);
+  margin-bottom: 8px;
+}
+
+.stats-empty {
+  font-size: 12px;
+  color: var(--cyan-dim);
+  opacity: 0.7;
+  padding: 6px 2px;
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: 3px;
+  background: rgba(53, 242, 255, 0.04);
+}
+
+.stats-time {
+  color: var(--cyan-dim);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.stats-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--cyan);
+  flex: 1;
+}
+
+.stats-min {
+  color: #cfeef2;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 @media (max-width: 480px) {

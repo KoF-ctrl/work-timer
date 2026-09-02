@@ -255,7 +255,16 @@
     setTimeout(() => el.hud.classList.remove('flash-complete'), 1400);
   }
 
+  function recordCompletedFocus() {
+    const finishedPhase = state.cycleEnabled ? state.runningPhase : 'simple';
+    if (finishedPhase === 'break') return; // only count productive focus time, not breaks
+    if (!window.WorkTimerStats) return;
+    const minutes = state.totalMs / (60 * 1000);
+    window.WorkTimerStats.recordFocusComplete(minutes, finishedPhase === 'work' ? 'WORK' : 'FOCUS');
+  }
+
   function completePhase() {
+    recordCompletedFocus();
     flashComplete();
     if (state.cycleEnabled) {
       if (state.runningPhase === 'work') {
