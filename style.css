@@ -583,6 +583,40 @@ body {
 
 .pomo-hud .gauge-area { margin: 6px auto 4px; }
 
+.header-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sound-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 3px;
+  color: var(--cyan-dim);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.sound-toggle-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(53, 242, 255, 0.08);
+}
+
+.sound-toggle-btn.muted {
+  color: var(--red);
+  border-color: var(--red);
+  opacity: 0.75;
+}
+
 .cycle-toggle {
   display: inline-flex;
   align-items: center;

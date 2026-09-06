@@ -34,7 +34,18 @@
     startBtn: document.getElementById('pomoStartBtn'),
     pauseBtn: document.getElementById('pomoPauseBtn'),
     resetBtn: document.getElementById('pomoResetBtn'),
+    soundToggleBtn: document.getElementById('soundToggleBtn'),
   };
+
+  const SOUND_STORAGE_KEY = 'work-timer:pomo-sound-enabled';
+
+  function loadSoundEnabled() {
+    try {
+      const raw = localStorage.getItem(SOUND_STORAGE_KEY);
+      if (raw !== null) return raw === '1';
+    } catch (e) { /* ignore */ }
+    return true; // sound on by default
+  }
 
   const state = {
     cycleEnabled: false,
@@ -47,6 +58,7 @@
     endAt: null,
     sessionCount: 1,
     dragging: false,
+    soundEnabled: loadSoundEnabled(),
   };
 
   function pad(n) {
@@ -213,9 +225,73 @@
     renderIdlePreview();
   });
 
+  // ---------- completion chime (Web Audio, no external file needed) ----------
+
+  let audioCtx = null;
+
+  function ensureAudioContext() {
+    if (!audioCtx) {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return null;
+      try {
+        audioCtx = new Ctor();
+      } catch (e) {
+        return null;
+      }
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  }
+
+  function playTone(ctx, freq, startTime, duration, peakGain) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(peakGain, startTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.02);
+  }
+
+  function playCompletionChime() {
+    if (!state.soundEnabled) return;
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    // bright ascending 3-note "confirm" chime, matching the HUD's sci-fi tone
+    [880, 1108.73, 1318.51].forEach((freq, i) => {
+      playTone(ctx, freq, now + i * 0.11, 0.28, 0.18);
+    });
+  }
+
+  function setSoundEnabled(enabled) {
+    state.soundEnabled = enabled;
+    try {
+      localStorage.setItem(SOUND_STORAGE_KEY, enabled ? '1' : '0');
+    } catch (e) { /* ignore */ }
+    el.soundToggleBtn.textContent = enabled ? '🔊' : '🔇';
+    el.soundToggleBtn.classList.toggle('muted', !enabled);
+    el.soundToggleBtn.setAttribute('aria-pressed', String(enabled));
+  }
+
+  setSoundEnabled(state.soundEnabled);
+
+  el.soundToggleBtn.addEventListener('click', () => {
+    ensureAudioContext(); // this click is a user gesture; unlock audio here too
+    setSoundEnabled(!state.soundEnabled);
+    if (state.soundEnabled) playCompletionChime(); // quick confirmation preview
+  });
+
   // ---------- controls ----------
 
   function startPomo() {
+    ensureAudioContext(); // unlock audio on this user gesture, well before completion
     if (state.status === 'idle') {
       state.runningPhase = state.cycleEnabled ? 'work' : 'simple';
       state.totalMs = state.durations[state.runningPhase] * 60 * 1000;
@@ -266,6 +342,7 @@
   function completePhase() {
     recordCompletedFocus();
     flashComplete();
+    playCompletionChime();
     if (state.cycleEnabled) {
       if (state.runningPhase === 'work') {
         state.runningPhase = 'break';
